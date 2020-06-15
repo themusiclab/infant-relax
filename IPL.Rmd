@@ -1,0 +1,1357 @@
+---
+bibliography: themusiclab.bib
+csl: nature.csl
+header-includes:
+- \usepackage[left]{lineno}
+- \usepackage{caption}
+- \captionsetup[figure]{labelformat=empty}
+- \usepackage{tabu}
+- \usepackage{afterpage}
+- \usepackage{mdframed}
+- \usepackage{color}
+notes-after-punctuation: no
+output:
+  pdf_document: 
+    fig_caption: yes
+    latex_engine: lualatex
+    keep_tex: true
+  word_document: default
+  html_document: default
+urlcolor: blue
+---
+
+```{r config, include = FALSE}
+
+# config
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(broom)
+library(lsr)
+library(lme4)
+library(lmerTest)
+library(patchwork)
+library(car)
+library(renv)
+library(TOSTER)
+
+# create a snapshot of all package versions for posterity
+renv::consent(provided = TRUE)
+renv::snapshot()
+
+# Rmd config
+options(scipen = 999) # prevent scientific notation for numerals
+format_p <- function(p) { # format p-values automatically
+  if (p < .001) {
+    return("< .001")
+  } else {
+    return(paste0("= ", round(p, digits = 3)))
+  }
+}
+```
+
+# Infants relax in response to unfamiliar foreign lullabies
+
+Constance M. Bainbridge\*†^1^, Mila Bertolo\*†^1^, Julie Youngers^1,2^, S. Atwood^1,3^, Lidya Yurdum^1^, Jan Simson^1^, Kelsie Lopez^1,4^, Feng Xing^1,5^, Alia Martin^6^ & Samuel A. Mehr\*^1,6,7^
+
+\small
+^1^Department of Psychology, Harvard University, Cambridge, MA 02138, USA.  
+^2^Department of Psychology, University of British Columbia, Vancouver, BC V6T 1Z4, Canada.  
+^3^Department of Psychology, University of Washington, Seattle, WA 98105, USA.   
+^4^Department of Cognitive, Linguistic, and Psychological Sciences, Brown University, Providence, RI 02912, USA.  
+^5^Department of Education, Johns Hopkins University, Baltimore, MD 21218, USA.   
+^6^School of Psychology, Victoria University of Wellington, Wellington 6012, New Zealand.  
+^7^Data Science Initiative, Harvard University, Cambridge, MA 02138, USA.  
+
+†These authors contributed equally and are listed alphabetically.
+
+\*Corresponding author. Emails: cbainbridge@g.harvard.edu; mila_bertolo@g.harvard.edu; sam@wjh.harvard.edu
+
+\bigskip
+
+\normalsize
+\begin{mdframed}[backgroundcolor=gray!20]
+Music is characterized by acoustical forms that are predictive of its behavioral functions. For example, adult listeners accurately identify unfamiliar lullabies as infant-directed on the basis of their musical features alone. This property could reflect a function of listeners' experiences, the basic design of the human mind, or both. Here, we show that American infants ($N = 144$) relax in response to 8 unfamiliar foreign lullabies, relative to matched non-lullaby songs from other foreign societies, as indexed by heart rate, pupillometry, and electrodermal activity. They do so consistently throughout the first year of life, suggesting the response is not a function of their musical experiences, which are limited relative to those of adults. The infants' parents overwhelmingly chose lullabies as the songs that they themselves would use to calm their fussy infant, despite their unfamiliarity. Together, these findings suggest that infants are predisposed to respond to universal features of lullabies.
+\end{mdframed}
+
+\bigskip
+
+\linenumbers
+Music is a human universal [@Mehr2019; @Jacoby2017; @Jacoby2019] that appears often in the lives of infants and their families [@Mendoza2019a; @Custodero2003; @Custodero2003a; @Mehr2014; @Trehub1997a]. Infants demonstrate a remarkable variety of responses to music as they develop: in the first few days of life, newborns remember melodies heard in the womb [@Granier-Deferre2011a]; distinguish consonant from dissonant intervals [@Zentner1996]; and detect musical beats [@Winkler2009]. Older infants differentiate synchronous movement from asynchronous movement in response to music [@Hannon2017]; become attuned to the rhythms of their native culture’s music by their first birthday [@Hannon2005]; garner social information from the songs they hear [@Mehr2016; @Mehr2017b]; and recall music in impressive detail [@Trainor2004; @Volkova2006] after long delays [@Mehr2016].
+
+Why are infants so interested in music? One possibility centers on the dynamics of parent-offspring interactions. Relative to other animals, human infants are helpless; to survive, they rely on resources provided by parents and alloparents [@Hrdy2009]. Such resources, whether material (like food) or not (like attention) constitute parental investment [@Trivers1972]. Human parental investment is routinely provided to infants in response to their elicitations, which often take the form of fussiness and crying [@Soltis2004].
+
+Infant-directed songs may credibly signal parental attention to infants, conveying information to infants that an adult is nearby, attending to them, and keeping them safe [@Mehr2017; @Mehr2020]. Singing indicates the location, proximity, and orientation of the singer (even when the singer is not visible, as at night); and it is also costly, in that the singer could be expending their energy on some other activity. Because parental attention is a key resource for helpless infants, they likely are predisposed to attend to signals of it: infants should be particularly interested in and reassured by vocal music with features suggesting that it is directed toward them.
+
+Studies of people with genomic imprinting disorders provide a unique test of this hypothesis because these disorders are characterized by divergent behaviors related to parental investment [@Haig2003; @Ubeda2008]. For example, infants with Prader-Willi syndrome elicit less parental investment than do typically developing infants: they have feeding difficulties, nursing less often; and they tend to be lethargic [@Cassidy2008]. Children with Angelman syndrome show the opposite pattern: they elicit *more* parental investment, with frequent drooling and chewing, uncoordinated overfeeding, and high degrees of social engagement [@Williams2006]. 
+
+Genomic imprinting disorders also alter the psychology of music, in a fashion consistent with the idea that infant-directed song signals parental investment. Compared to the relaxation response that typically developing people display during passive music listening, Prader-Willi syndrome is associated with an increased relaxation response [@Mehr2017a], and Angelman syndrome is associated with a reduced relaxation response [@Kotler2019]. These effects are specific to music; they were not elicited by listening to pleasant speech, suggesting that singing is a particularly effective means of satisfying parental investment elicitations in Prader-Willi syndrome, and a particularly ineffective means of doing so in Angelman syndrome.
+
+Credible signals have evolved repeatedly in many species with similar patterns across senders and receivers [@MaynardSmith2003; @Mehr2020]. The resulting innate links between the forms and functions of vocal signals [@Morton1977; @Owren2001; @Endler1993] explain why, for example, hostile vocalizations across species — from growling tigers to shrieking eagles — are recognized as hostile by human listeners [@Filippi2017]. Because these signals are shaped by natural selection, they are expected to show consistency across members of a species.
+
+Infant-directed vocalizations appear to fit this pattern. Infant-directed speech is acoustically distinct from adult-directed speech across cultures [@Moser2020; @Fernald1989; @Kuhl1997; @Piazza2017; @Broesch2018; @Bryant2007]. Lullabies, a common form of infant-directed song, are reliably distinguishable from other songs [@Trehub1993a]; in a representative sample of music from small-scale societies, adult naïve listeners considered foreign lullabies likely to be "used to soothe a baby", relative to dance, healing, and love songs [@Mehr2018]. This result, which has also been supported by a massive conceptual replication (*N* = 29,357), is explained in large part by the striking musical consistency of lullabies found across cultures: their slow tempos and smooth, minimally-accented melodic contours [@Mehr2019]. Strikingly, these same musical features appear in infant-directed or low-arousal Western music [@Trainor1997; @Trehub1997; @Gomez2007; @Rock1999].
+
+If infant-directed song indeed functions as a credible signal of parental attention, then the universal features of the signal should produce reliable relaxation effects in the receiver: singing should satisfy infants' fussy demands for parental investment, calming them. Common sense does suggest that infants are calmed by infant-directed song, but typically, this question has been tested in the context of songs that are known to the infant and/or are sung in a familiar language. This makes it difficult to measure the specific soothing effects of infant-directed song, independently of the soothing effects of familiar sounds, more generally. Adults' ratings of the familiarity and perceived relaxation of music are positively correlated [@Tan2012], and parents produce music for their children often [@Mendoza2019a; @Custodero2003; @Custodero2003a; @Mehr2014; @Trehub1997a], so familiar music may produce mere-exposure effects [@Zajonc2001] on infant relaxation.
+
+Indeed, infant arousal, as indexed by electrodermal activity, decreased in response to maternal singing in a "soothing" style, relative to a "playful" style; but both styles were produced in familiar songs [@Cirelli2019]. Listening to live or recorded lullabies reduced heart rate in pre-term infants, more so than a silent control, but the songs were well-known and produced in a familiar language [@Garunkstiene2014]. Singing reduced distress after a still-face procedure, as indexed by increased smiling and decreased ratings of negative affect, but the effects were driven by the familiarity of the songs [@Cirelli2020]. Infants attended longer to singing than speech before becoming fussy, when both were produced in a foreign language [@Corbeil2016], but whether this effect reflects increased attention to songs or increased relaxation as a result of listening to music is unknown. In sum, while there is some evidence that infant-directed songs produce relaxation effects in infants, the effects in prior studies may be attributable to infants' familiarity with the songs, rather than the songs' acoustic properties (as would be predicted by a credible signaling account [@Mehr2017; @Mehr2020]). 
+
+In this paper, we ask whether infants relax in response to infant-directed songs produced in unfamiliar languages from foreign societies. We played infants pairs of songs drawn from the *Natural History of Song* Discography [@Mehr2019], a collection of lullabies, dance songs, healing songs, and love songs recorded in 86 world cultures, that were either infant-directed (the lullabies) or not (the other song types). We measured infants' heart rate, pupil dilation, electrodermal activity, frequency of blinking, and gaze direction. Based on prior results in a similar listening paradigm [@Mehr2017a; @Kotler2019], we preregistered a hypothesis that infants would show decreased heart rate (i.e., a relaxation response) during the lullabies, relative to the non-lullabies. We report a test of that hypothesis, a series of planned exploratory analyses of other measures of infants' responses, and a measure of parents' intuitions about the songs.
+
+# Methods
+
+## Participants
+
+```{r descriptives}
+
+# get data
+hr <- read.csv("./data/IPL_hr_clean.csv")
+studylog <- read.csv("./data/IPL_studylog.csv", header = TRUE)
+
+# descriptives
+n_female <- n_groups(hr %>%
+  filter(female_baby == 1) %>%
+  group_by(id))
+ages <- hr %>%
+  group_by(id) %>%
+  summarise(age = mean(age))
+
+# data exclusions and why
+excluded <- studylog %>%
+  filter(fussout == 1 | exclude == 1) %>%
+  select(id, fussout, exclude_reason) %>%
+  group_by(id)
+n_excluded <- n_groups(excluded)
+n_excluded_fussy <- n_groups(excluded %>%
+  filter(fussout == 1))
+n_excluded_attn <- n_groups(excluded %>%
+  filter(exclude_reason == "never looked at stim"))
+n_excluded_tech <- n_groups(
+  excluded %>%
+    filter(fussout == 0) %>%
+    filter(
+      exclude_reason == "missing front camera video" |
+        exclude_reason == "missing part of front camera video" |
+        exclude_reason == "missing e4 marker" |
+        exclude_reason == "no E4 sync marker" |
+        exclude_reason == "very poor BVP signal" |
+        exclude_reason == "bad HR"
+    )
+)
+n_excluded_error <- n_groups(excluded %>%
+  filter(exclude_reason == "wrong condition run"))
+
+# how many completed all trials
+n_complete <- n_groups(studylog %>%
+  group_by(id) %>%
+  filter(fussout == 0 & exclude == 0 & exclude_trials. == "No"))
+
+# how many participants per seat type
+seat_count <- studylog %>%
+  filter(fussout == 0 | exclude == 0 | seat != "") %>%
+  select(id, seat)
+seat_highchair <- count(seat_count %>% filter(seat == "highchair"))
+seat_recliner <- count(seat_count %>% filter(seat == "recliner"))
+seat_lap <- count(seat_count %>% filter(seat == "lap"))
+```
+
+We recruited 144 typically-developing infants from the greater Boston area (`r n_female` females, mean age = `r mean(ages$age) %>% round(1)` months, SD  = `r sd(ages$age) %>% round(1)`, range: `r min(ages$age) %>% round(1)`-`r max(ages$age) %>% round(1)`). Data from an additional `r n_excluded` infants were collected but excluded due to infant fussiness (*n* = `r n_excluded_fussy`); lack of attention (*n* = `r n_excluded_attn`); technical error (*n* = `r n_excluded_tech`); or experimenter error (*n* = `r n_excluded_error`). Nearly all infants were born full-term. Information about language exposure was available from 98 of the participants; of these, none of the languages spoken at home matched those used in the stimuli of this study (see Table 1).
+
+Infants who became fussy and ended their participation partway through the study were included in the analyses if they attended to the first pair of songs and the subsequent preference trial (see Stimuli, below). Most infants (*n* = `r n_complete`) contributed data for all four song pairs and preference trials. For compensation, parents received a $5 gift card and infants were given a prize. All testing took place at the Music Lab at Harvard University. Parents provided informed consent prior to their and their infant's participation. This research was approved by the Committee on the Use of Human Subjects, Harvard University's Institutional Review Board.
+
+## Stimuli
+
+We chose 16 songs from the *Natural History of Song* Discography [@Mehr2019] that were originally produced in 15 different societies and languages (Table 1). Eight of the songs were infant-directed, having been used as lullabies (i.e., they were originally used to soothe, calm, or put an infant/child to sleep) in the societies where they were recorded, according to the anthropologist or ethnomusicologist who collected each recording. The other 8 songs were originally produced in the context of expressing love (5); healing the sick (2); or dancing (1). 
+
+We chose this particular subset of 16 songs by first limiting the corpus to those songs produced by a single singer with no instrumental accompaniment; then, using adults' ratings of the songs from a previous study [@Mehr2018], we chose a set of lullabies rated as likely to be "used to soothe a baby" and a set of non-lullabies with low ratings on that item. 
+
+We paired the lullabies and non-lullabies from these sets so as to match the perceived gender of the singer as closely as possible, because infants are sensitive to the gender of voices [@Miller1983]. We ordered the pairs such that those with larger differences on the rating "used to soothe a baby" were presented first, so as to maximize the measurable differences in responses to lullabies vs. non-lullabies in each infant, even if they became inattentive or fussy partway through the study. All recordings were normalized to approximately balance their perceived loudness and were also manually edited to remove background noise and microphone artifacts, using noise reduction filters and equalization.
+
+<!-- table 1: info about songs, cultures, languages -->
+\afterpage{%
+\begin{table}[p]
+\small
+\tabulinesep=1.1mm
+  \begin{tabu} to \textwidth {l@{\hskip 0.3in}X[l]X[l]X[l]@{\hskip 0.3in}lX[l]X[l]X[l]}
+     & \multicolumn{3}{@{}l}{Lullaby} & \multicolumn{4}{@{}l}{Paired non-lullaby} \\ 
+  \hline
+    Gender & Society & Region & Language & Type & Society & Region & Language  \\
+  \hline 
+    Female & Saami & Scandinavia & Luk Saami & Love & Nenets & North Asia & Tundra Nenets  \\
+     & Nahua & Maya Area & Western Nahuatl & Love & Serbs & Southeastern Europe & Serbian Standard \\
+     & Igulik Inuit & Arctic and Subarctic & Western Canadian Inuktitut & Dance & Chachi & Northwestern South America & Cha'palaa \\
+     & Kuna & Central America & Border Kuna & Love & Highland Scots & British Isles & Scottish Gaelic \\
+    Male & Iroquois & Eastern Woodlands & Cherokee & Love & Kurds & Middle East & Central Kurdish \\
+     & Hopi & Southwest and Basin & Hopi & Healing & Hawaiians & Polynesia & Hawaiian \\
+     & Ona & Southern South America & Selk'nam & Love & Chuuk & Micronesia & Chuukese \\
+     & Highland Scots & British Isles & Scottish Gaelic & Healing & Seri & Northern Mexico & Seri \\
+  \end{tabu}
+\caption*{\textbf{Table 1 | The songs infants heard.} Using the \textit{Natural History of Song} Discography\textsuperscript{1}, we chose 8 lullabies and paired them with non-lullabies drawn from the other three song types in the corpus (dance, love, or healing), matching the perceived gender of the singer. All songs were produced by solo voices without instrumental accompaniment.}
+\end{table}
+\clearpage
+}
+
+We generated animations of two characters who lip-synced to each song, giving the impression that they were singing (Fig. 1; videos are available at https://osf.io/2t6cy). Each character sang four songs, such that one exclusively sang lullabies while the other exclusively sang non-lullabies. The videos were counterbalanced on four dimensions: which was the first song heard (lullaby or non-lullaby), which character was the lullaby singer (red or blue), which side the lullaby singer appeared on (left or right, to match character placement during silent preference trials; see Procedure), and the perceived gender of the singer (male or female). This yielded 16 conditions, which we balanced across ages, such that each counterbalancing condition included infants across the full range of ages tested.
+
+Regardless of counterbalancing condition, we varied the presentation order of lullabies vs. non-lullabies, so that they did not appear in strict alternation, which could introduce order effects. This yielded trial orderings that were either P-L-N-P-N-L-P-L-N-P-N-L-P or P-N-L-P-L-N-P-N-L-P-L-N-P, where L denotes a lullaby singing trial, N denotes a non-lullaby singing trial, and P denotes a preference trial. Because there were two characters, and each character sang four songs, each infant in the experiment listened to 8 of the 16 songs.
+
+<!-- fig 1: diagram of order of events (no code required) -->
+\afterpage{%
+\begin{figure}[p]
+  \centering
+  \includegraphics[height=4.5in]{./viz/IPL_fig1.pdf}
+\caption*{\textbf{Fig. 1 | Structure of the experiment.} Infants viewed videos of animated characters who either appeared in silence (during preference trials) or who sang the songs one at a time, next to a distracting animation of slowly-moving colored boxes.}
+\end{figure}
+\clearpage
+}
+
+## Procedure
+
+Infants sat in a high chair (*n* = `r seat_highchair`), recliner (*n* = `r seat_recliner`), or a parent’s lap (*n* = `r seat_lap`) approximately 150 cm away from a 107.5 x 60.5 cm television screen; parents chose the seat based on the physical size of the infant and whether the infant was comfortable sitting in it. When infants sat in a high chair or recliner the parent sat behind them. When infants sat on their parent's lap, the parent listened to masking music through passive noise-canceling headphones throughout the experiment; we also asked parents to keep their eyes closed. We recorded videos of the infants at ultra high definition (8-bit 4K at 150Mbps; Panasonic Lumix GH5S and Lumix G Vario 14-140mm lens).
+
+Fig. 1 depicts the order of events. The experiment began with a 14 s baseline preference trial, in which the two animated characters were presented simultaneously in silence. Four sets of three trials followed, with each set consisting of two singing trials and one preference trial. On the singing trials, one of the animated characters sang a song, appearing alone on the screen next to a screen-saver-like animation (to reduce the likelihood that infants would look only at the singer). Each singing trial was 14 s long. The preference trials were identical to the baseline preference trial. Attention-grabbing animations appeared at the center of the screen before each preference trial. The experiment lasted about five minutes.
+
+Characters on the screen were 25 cm wide. They were presented 45 cm apart when appearing simultaneously during the preference trials. Videos were presented at 4K resolution and audio played from two speakers (Neumann KH80 DSP) at approximately the height of the infants' ears, 125 cm apart, placed such that the infant was seated at the apex of an equilateral triangle formed with the two speakers. The songs had a maximum volume of approximately 60 dB.
+
+## Infant measures
+
+### Psychophysiology
+
+We recorded infant heart rate and electrodermal activity with a physiological monitor (Empatica E4) attached to the infant's thigh or calf, depending on the size of the infant, and usually on the left side. The monitor records heart rate via a photoplethysmograph at the site of the device and electrodermal activity via electrodes attached to the side or bottom of the infant's foot (with BIOPAC isotonic gel); it has been successfully validated in adults [@vanLier2020].
+
+### Pupillometry
+
+```{r pupilsReliability}
+
+# get data
+all_pupil_annotations <-
+  read_csv("./data/IPL_pupils.csv") %>%
+  rename(participant = video)
+
+# extract reliability data (for later on)
+pupils_reliability_annotations <- all_pupil_annotations %>%
+  group_by(stimulus) %>%
+  mutate(n_annotations = n()) %>%
+  filter(n_annotations > 1) %>%
+  ungroup() %>%
+  mutate(num = nth_annotation)
+
+# reshape annotations
+pupils_rel_ann_wide <- pupils_reliability_annotations %>%
+  select(
+    stimulus,
+    num,
+    pupil_area,
+    pupil_area_rel,
+    width,
+    height,
+    left,
+    top
+  ) %>%
+  pivot_longer(-c(stimulus, num)) %>%
+  mutate(name = paste0(name, "_", num)) %>%
+  select(-num) %>%
+  pivot_wider()
+
+# reshape visibility categories
+pupils_rel_radio_respones <- pupils_reliability_annotations %>%
+  select(stimulus, num, noticeRadios) %>%
+  pivot_longer(-c(stimulus, num)) %>%
+  mutate(name = paste0(name, "_", num)) %>%
+  select(-num) %>%
+  pivot_wider()
+
+# combine reshaped data
+pupils_reliability_wide <-
+  full_join(pupils_rel_ann_wide, pupils_rel_radio_respones, by = "stimulus") %>%
+  mutate(comb_radio = if_else(
+    noticeRadios_1 == noticeRadios_2,
+    noticeRadios_1,
+    "differentRadios"
+  ))
+
+# overall reliability
+pupils_reliability_correlation_all <- pupils_reliability_wide %>%
+  select(comb_radio, pupil_area_1, pupil_area_2) %>%
+  na.omit() %>%
+  summarise(r = cor(pupil_area_1, pupil_area_2))
+
+# reliability by visibility type
+pupils_reliability_correlations <- pupils_reliability_wide %>%
+  select(comb_radio, pupil_area_1, pupil_area_2) %>%
+  na.omit() %>%
+  group_by(comb_radio) %>%
+  summarise(r = cor(pupil_area_1, pupil_area_2))
+```
+
+
+We developed a new procedure to manually annotate pupil dilation and applied it to still images from 30 of the infants. We extracted still images of the infant's face from the videos and used the `dlib` face recognition library [@King2009] to automatically rotate the frame, levelling the eye horizontally; and to isolate one of the infant's eyes (we randomly selected either the left or right eye for each infant). Workers on Amazon Mechanical Turk then viewed each eye image (see Supplementary Fig. 1) and were asked (1) to adjust its brightness and contrast, so as to optimize visibility of the pupil; (2) to rate how visible the pupil was (from one of six options: \textit{Pupil is clearly visible; Pupil is visible, but it's difficult to see; Pupil is NOT visible, but I could see enough of it to make a guess about its outline; Pupil is NOT visible but the eye is still open; Pupil is NOT visible because the eye is closed; Other}); and (3) to draw a superimposed ellipse on the image, surrounding the visible area of the pupil. 
+
+We set two qualification criteria for workers based on their performance in 10 eye images: (1) a correlation of at least $r = .8$ between their annotations (i.e., width and height of their ellipses) and the mean annotations from a pilot study ($N = 46$ workers); and (2) in at least 7 of the 10 images, a matching visibility rating with the option selected by at least 15% of pilot participants. Workers were not aware of whether or not an image being annotated was counted toward the qualification, but they were told that their performance was being evaluated in real time.
+
+The pool of qualified workers then annotated 3 images per second of infant video, drawn from the singing trials only and presented in a random order. Each worker annotated approximately 263 images and spent 22.5 s per image, on average. Four images per trial were "validation images" that were presented more than once to the same worker, providing a measure of internal reliability of the annotations. Reliability was high, as measured in two ways. First, visibility ratings were internally consistent (that is, validation images were generally classified repeatedly in the same fashion by annotators; see confusion matrix in Supplementary Fig. 2). Second, the annotated pupil sizes were internally consistent: validation annotations correlated with the original annotations at $r = `r pupils_reliability_correlation_all[['r']] %>% round(2)`$ (using total pupil area). The degree of reliability varied as a function of how visible the pupil was; validation images marked \textit{Pupil is clearly visible} correlated at $r = `r pupils_reliability_correlations %>% filter(comb_radio == 'clearly') %>% pull(r) %>% round(2)`$, whereas those marked \textit{Pupil is NOT visible, but I could see enough of it to make a guess about its outline} correlated less strongly, at $r = `r pupils_reliability_correlations %>% filter(comb_radio == 'estimate') %>% pull(r) %>% round(2)`$. 
+
+To produce the data used in analyses, we computed a relative pupil size measure by dividing the pupil area by the full eye area, in pixels and within-participants, so as to adjust for increases in visible pupil size due to motion toward or away from the camera (which would erroneously increase or decrease the visible area of the pupil, respectively). Last, we removed all observations above the 99th percentile and below the 1st percentile; these appeared to be impossibly large or small values due to face recognition errors in the automated image extraction.
+
+### Gaze and blinking
+
+We manually annotated infant gaze and blinks, frame-by-frame at 60 fps using Datavyu [@DatavyuTeam2014]. Annotators worked with the audio muted, so that they remained unaware of the songs each character sang. 
+
+For gaze, we randomly selected 20% of the videos, which a second person then annotated, independently of the first set of annotations. We assessed reliability by correlating trial-wise durations of gaze toward the two locations on the screen across pairs of annotators for each infant. Reliability was high (median *r* = .98, interquartile range: .90-.99).
+
+For blinks, which are more difficult to annotate, and, given their sparsity, are more likely to produce internally unreliable annotations, we used a slightly different procedure. Two annotators independently annotated all the videos, and we assessed the reliability of each video's annotations by correlating the two annotators' trial-wise counts of blinks for each infant. The distribution of correlations was strongly left-skewed, with approximately ten low outliers (*r*s < .6). The annotators revisited those 10 videos and corrected any evident errors, or elected to drop these infants from analyses, because they disagreed about the timing and frequency of the blinking. The decision to drop these participants was made blind to the results of any analyses. Among the remaining participants (*n* = 140) reliability was high (median *r* = .94, interquartile range: .85-1).
+
+## Parent measures
+
+After the infant completed the experiment, parents viewed videos of singing trials for the 8 songs which their infant had not heard during the study, using a tablet. For each pair, we asked parents to choose the song they would prefer to sing if their baby were fussy (and assuming the parent already knew how to sing both songs). We analyzed all available data, regardless of whether or not the parent's infant had completed the experiment. Parents also completed a survey concerning their infant's home musical environment, for use in a separate study.
+
+## Statistical power
+
+Because the experimental method we designed is new, no identical benchmark exists on which we could base a power analysis. Instead, we used data from a similar listening experiment in typically-developing adults [@Mehr2017a] to compute a plausible within-subjects effect size, based on the difference in mean heart rate during speech vs. song in people with Prader-Willi syndrome (*d* = 0.36). We chose a target sample size of *N* = 144 prior to running the experiment to provide power greater than .99 for the main planned comparison (i.e., mean heart rate during lullaby trials relative to non-lullaby trials). We also chose this sample size to facilitate even counterbalancing of stimuli across a wide range of infant ages, maximizing our ability to measure age effects while avoiding effects of stimulus ordering.
+
+# Results
+
+## Confirmatory analysis
+
+```{r heartRate}
+
+# get data
+hr <- read.csv("./data/IPL_hr_clean.csv")
+
+# mean-based analyses
+hr_lul_means <- hr %>%
+  filter(lultrial == 1) %>%
+  group_by(id) %>%
+  summarise(mean_lul_hr = mean(zhr_pt, na.rm = TRUE))
+hr_lul_descriptives <- t.test(hr_lul_means$mean_lul_hr) %>%
+  tidy() %>%
+  mutate(sd = sd(hr_lul_means$mean_lul_hr, na.rm = TRUE)) %>%
+  mutate(cohen.d = cohensD(hr_lul_means$mean_lul_hr, mu = 0))
+hr_nlul_means <- hr %>%
+  filter(lultrial == 0) %>%
+  group_by(id) %>%
+  summarise(mean_nlul_hr = mean(zhr_pt, na.rm = TRUE))
+hr_nlul_descriptives <- t.test(hr_nlul_means$mean_nlul_hr) %>%
+  tidy() %>%
+  mutate(sd = sd(hr_nlul_means$mean_nlul_hr, na.rm = TRUE)) %>%
+  mutate(cohen.d = cohensD(hr_nlul_means$mean_nlul_hr, mu = 0))
+hr_joined <- inner_join(hr_lul_means, hr_nlul_means)
+t_mean_hr <-
+  t.test(hr_joined$mean_lul_hr, hr_joined$mean_nlul_hr, paired = TRUE)
+
+# predict hr effect size from age
+hr_age <-
+  inner_join(ages, hr_joined) %>% mutate(hr_diff = mean_lul_hr - mean_nlul_hr)
+hr_age_effect <- lm(hr_diff ~ age, hr_age) %>%
+  glance()
+
+# gender effects
+hr_gender <- hr %>%
+  select(id, zhr_pt, lultrial, female_parent, female_singer) %>%
+  filter(!is.na(lultrial))
+hr_gender_same <- hr_gender %>%
+  filter((female_parent == 1 &
+    female_singer == 1) |
+    (female_parent == 0 & female_singer == 0)) %>%
+  group_by(id, lultrial) %>%
+  summarise(mean_hr = mean(zhr_pt, na.rm = TRUE)) %>%
+  spread(lultrial, mean_hr) %>%
+  mutate(diff = `1` - `0`)
+hr_gender_different <- hr_gender %>%
+  filter((female_parent == 0 &
+    female_singer == 1) |
+    (female_parent == 1 & female_singer == 0)) %>%
+  group_by(id, lultrial) %>%
+  summarise(mean_hr = mean(zhr_pt, na.rm = TRUE)) %>%
+  spread(lultrial, mean_hr) %>%
+  mutate(diff = `1` - `0`)
+hr_gendersame_descriptives <- t.test(hr_gender_same$diff) %>%
+  tidy() %>%
+  mutate(sd = sd(hr_gender_same$diff, na.rm = TRUE))
+hr_genderdifferent_descriptives <-
+  t.test(hr_gender_different$diff) %>%
+  tidy() %>%
+  mutate(sd = sd(hr_gender_different$diff, na.rm = TRUE))
+t_hr_gender <-
+  t.test(hr_gender_different$diff, hr_gender_same$diff, paired = FALSE) %>%
+  tidy()
+```
+
+We preregistered the prediction that infants' heart rate would decrease more substantially as a result of listening to foreign lullabies than non-lullabies (the preregistration is available at https://osf.io/f69mn). To this end, we normalized heart rate values during singing trials relative to the previous trial (where the previous trial was either a singing trial or a silent preference trial), such that *z*-scores are interpretable as immediate changes in heart rate, indexing moment-to-moment relaxation (n.b., this normalization procedure was also preregistered): positive *z*-scores thus indicate an increase in heart rate from the previous trial, and negative scores a decrease.
+
+In the main analyses, we analyzed trial-wise mean *z*-scores for each infant, split by song type. As in previous work [@Mehr2017a; @Kotler2019], we trimmed (a) all values on trials for which there were fewer than 5 heart rate observations during the normalization period (the previous trial), as this would produce uninterpretable standard deviation values with which to compute *z*-scores; and (b) extreme values, defined as $|z|$ > 5. These trimming rules dropped 2.19% and 0.31% of the heart rate observations, respectively, and 2 of the 144 participants. These decisions did not substantively affect any of the results.
+
+Mean normalized heart rate during lullabies (Fig. 2a) differed significantly from 0, indicating a decrease in heart rate relative to the previous trial (in *z*-scores, *M* = `r hr_lul_descriptives$estimate %>% round(2)`, *SD* = `r hr_lul_descriptives$sd %>% round(2)`, 95% CI [`r hr_lul_descriptives$conf.low %>% round(2)`, `r hr_lul_descriptives$conf.high %>% round(2)`]; *t*(`r hr_lul_descriptives$parameter`) = `r hr_lul_descriptives$statistic %>% round(2)`, *p* < .001), *d* = `r hr_lul_descriptives$cohen.d %>% round(2)`, one-sample *t*-test). In contrast, heart rate during non-lullabies was comparable to 0, indicating no change in heart rate relative to the previous trial (*M* = `r hr_nlul_descriptives$estimate %>% round(2) %>% format(nsmall = 2)`, *SD* = `r hr_nlul_descriptives$sd %>% round(2)`, 95% CI [`r hr_nlul_descriptives$conf.low %>% round(2)`, `r hr_nlul_descriptives$conf.high %>% round(2)`]; *t*(`r hr_nlul_descriptives$parameter`) = `r hr_nlul_descriptives$statistic %>% round(2)`, *p* = `r hr_nlul_descriptives$p.value %>% round(2)`). The within-subjects difference between mean heart rates (i.e., the main pre-registered analysis) showed a clear difference between song types, such that lullabies decreased heart rates significantly more than non-lullabies (Fig. 2a; *t*(`r t_mean_hr$parameter`) = `r t_mean_hr$statistic %>% round(2)`, *p* = `r t_mean_hr$p.value %>% signif(1)`, paired *t*-test). These findings confirm the preregistered prediction of reduced heart rate in response to unfamiliar foreign lullabies.
+
+```{r fig2, fig.width = 7, fig.height = 4, fig.cap = "\\textbf{Fig. 2 | Lullabies reduce infant heart rate.} \\textbf{a}, The points depict mean trial-wise heart rates, normalized to the previous 14 s trial (regardless of its type), for each infant, with the gray lines indicating the pairs of points that represent the same infants; the violin plots (coloured areas) are kernel density estimations; the horizontal black lines indicate the means across all participants; and the shaded white boxes indicate the 95\\% confidence intervals of the means. The points are jittered to improve clarity. Heart rates were reduced during lullabies (the mean $z$-score was negative and significantly different than 0, denoted by the horizontal dotted line), relative to the previous trial, but no such effect was found for non-lullabies. Within-infants, heart rate during lullabies was significantly lower than during non-lullabies. \\textbf{b}, An analysis of heart rate over time, averaged across all trials, shows that while heart rate drops initially in all singing trials, the drop is more pronounced in lullabies, driving the overall effect. The lines and confidence bands are from a generalized additive model that does not account for nesting. \\textsuperscript{\\ast\\ast\\ast}$p<.001$; \\textsuperscript{\\ast\\ast}$p<.01$"}
+
+# fig 2a: mean heart rate violinplots
+hr_reshape <-
+  hr_joined %>% pivot_longer(
+    cols = c(mean_lul_hr, mean_nlul_hr),
+    values_to = "zhr",
+    names_to = "songtype"
+  )
+ylab <- expression(paste("Mean heart rate (", italic("z"), ")"))
+title2a <- expression(bold("a"))
+fig2a <- ggplot(
+  data = hr_reshape,
+  aes(
+    y = zhr,
+    x = songtype
+  )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    alpha = .8,
+    size = .5
+  ) +
+  geom_violin(aes(fill = songtype),
+    trim = FALSE,
+    alpha = .8
+  ) +
+  scale_fill_manual(values = c("blue", "red")) +
+  geom_line(aes(group = id),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    alpha = .1
+  ) +
+  geom_point(
+    aes(y = zhr),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    size = 1.1,
+    pch = 21,
+    fill = "white"
+  ) +
+  stat_summary(
+    geom = "crossbar",
+    fun.data = mean_cl_normal,
+    fun.args = list(conf.int = 0.95),
+    fill = "white",
+    width = 0.8,
+    alpha = 0.8,
+    size = 0.4
+  ) +
+  stat_summary(
+    fun = "mean",
+    width = 0.9,
+    size = 0.4,
+    geom = "crossbar"
+  ) +
+  geom_segment(aes(
+    y = 1.75,
+    yend = 1.75,
+    x = 1.05,
+    xend = 1.95
+  ),
+  size = 0.1
+  ) +
+  annotate(
+    geom = "text",
+    x = 1.5,
+    y = 1.8,
+    label = "**",
+    size = 4
+  ) +
+  annotate(
+    geom = "text",
+    x = 0.7,
+    y = -.9,
+    label = "***",
+    size = 4
+  ) +
+  scale_x_discrete(labels = c("Lullaby", "Non-lullaby")) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab(ylab) +
+  xlab("") +
+  ggtitle(title2a)
+
+# fig 2b: timewise heart rates within trials
+hrsongs <- hr %>% drop_na(lultrial)
+ylab <- expression(paste("Heart rate (", italic("z"), ")"))
+titleb <- expression(bold("b"))
+fig2b <- ggplot(data = hrsongs) +
+  geom_smooth(aes(
+    x = time_trial,
+    y = zhr_pt,
+    color = factor(lultrial)
+  ),
+  method = "gam"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +
+  scale_x_continuous(breaks = seq(0, 14, by = 1)) +
+  annotate(
+    geom = "text",
+    x = 11,
+    y = -0.25,
+    label = 'bold("Lullaby")',
+    color = "blue",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  annotate(
+    geom = "text",
+    x = 10,
+    y = 0.1,
+    label = 'bold("Non-lullaby")',
+    color = "red",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab(ylab) +
+  xlab("Time during trial (s)") +
+  ggtitle(titleb)
+
+# plot
+fig2a + fig2b + plot_layout(widths = c(1, 2))
+```
+
+We conducted three planned follow-up analyses. First, to determine what drove the mean difference in heart rate across lullabies and non-lullabies, we visualized the trajectory of heart rate within singing trials in a time-series analysis (Fig. 2b). While heart rates dropped almost immediately following the onset of singing, regardless of song type, this drop was more pronounced during lullabies. Because time-wise heart rate trends were nonlinear, and in the absence of any a priori predictions about those trends, we elected not to model them directly.
+
+Second, we tested whether the heart rate effects were driven by any particular age range of infants. They were not: a regression of the within-subjects difference between mean heart rate during lullabies vs. non-lullabies on infant age found no significant effect (Supplementary Fig. 3; *F*(1, `r hr_age_effect$df.residual`) = `r hr_age_effect$statistic %>% round(2)`, *p* = `r hr_age_effect$p.value %>% round(2)`, *R*^2^ = `r hr_age_effect$r.squared %>% round(2)`, omnibus test). 
+
+Third, we tested whether a match between the gender of the infant's primary caregiver (as specified by the parent who attended the experiment with the infant) and the perceived gender of the singers predicted any difference in within-subjects main effects, because, for instance, when hearing male-sounding lullabies, those infants who have male primary caregivers may be likely to relax more than those infants with female primary caregivers, since male singers may sound more familiar to them. We found no evidence for such an effect: the within-subjects main effect was of comparable size across infants (main effect when gender of singer was matched to primary caregiver: *M* = `r hr_gendersame_descriptives$estimate %>% round(2)`, *SD* = `r hr_gendersame_descriptives$sd %>% round(2)`, 95% CI [`r hr_gendersame_descriptives$conf.low %>% round(2)`, `r hr_gendersame_descriptives$conf.high %>% round(2)`]; main effect when gender of singer was not matched to primary caregiver: *M* = `r hr_genderdifferent_descriptives$estimate %>% round(2)`, *SD* = `r hr_genderdifferent_descriptives$sd %>% round(2)`, 95% CI [`r hr_genderdifferent_descriptives$conf.low %>% round(2)`, `r hr_genderdifferent_descriptives$conf.high %>% round(2)`]; *t*(`r t_hr_gender$parameter %>% round(2)`) = `r t_hr_gender$statistic %>% round(2)`, *p* = `r t_hr_gender$p.value %>% round(2)`, independent samples *t*-test).
+
+## Exploratory analyses
+
+We conducted a series of exploratory analyses to test for convergent evidence supporting the preregistered result reported above, and to examine an alternate interpretation of the heart rate findings suggested by an anonymous reviewer: that rather than relaxing infants, the lullabies simply captured their attention more so than the other songs. Indeed, in some contexts, heart rate decreases can indicate increased attention to a stimulus [@Richards2000], and music is known to attract infants' attention [@Corbeil2016]. Additional measures can arbitrate between these interpretations.
+
+First, we analyzed infants' pupil dilation, an indicator of both attention to a stimulus [@Laeng2012] and emotional arousal in response to it [@Bradley2008], including during music listening [@Laeng2016; @Widmann2018]. If the lullabies relaxed infants, then pupil size should decrease during lullabies, relative to non-lullabies — contrasting sharply with an attention account for the heart rate findings, which would predict increases in pupil size.
+
+Second, we analyzed infants' electrodermal activity, an indicator of arousal used in prior studies of relaxation responses to music [@Cirelli2020; @Cirelli2019]. If the lullabies relaxed infants, then electrodermal activity should decrease during lullabies, relative to non-lullabies. Increased attention, however, does not imply a directional effect on electrodermal activity.
+
+Third, we analyzed infants' gaze and rate of blinking, as measures of interest in the songs. These measures do not bear on the relaxation hypothesis, but rather, they test the degree to which infants' attention to the animated characters varied as a function of whether they were singing lullabies or non-lullabies.
+
+Last, in two additional analyses (unrelated to the relaxation and attention accounts described above), we explored the degree to which the perceived infant-directedness of the songs was predictive of infants' heart rates; and the degree to which *parents* made inferences about the different song types.
+
+### Relaxation response as indexed by pupillometry
+
+```{r pupillometry}
+
+# remove reliability annotations
+pupil_annotations <- all_pupil_annotations %>%
+  filter(nth_annotation == 1)
+
+# trim <1%ile & >99%ile
+percentiles <-
+  quantile(
+    pupil_annotations %>% pull(pupil_area_rel),
+    probs = c(.01, .99),
+    na.rm = T
+  )
+pupil_annotations <- pupil_annotations %>%
+  filter(pupil_area_rel > percentiles[1] &
+    pupil_area_rel < percentiles[2])
+
+# bin by second
+pupil_annotations_binned <- pupil_annotations %>%
+  group_by(participant, trial) %>%
+  mutate( # compute frame relative to beginning of trial
+    rel_frame = frame - min(frame),
+    # compute seconds for binning from relative frames
+    rel_second = floor(rel_frame / 60)
+  ) %>%
+  group_by(participant, trial, rel_second) %>%
+  summarise(
+    frame = min(frame),
+    # count frames and NAs in this second
+    n_frames_in_sec = n(),
+    n_NAs_in_sec = sum(is.na(width)),
+    # compute mean of values / annotations
+    pupil_area_rel = mean(pupil_area_rel, na.rm = T),
+    # compute first values for categorical vars that are the same anyways
+    lultrial = first(lultrial),
+    eye = first(eye)
+  ) %>%
+  ungroup()
+
+pupil_annotations_binned <- pupil_annotations_binned %>%
+  group_by(participant) %>%
+  mutate( # a-score relative pupil area
+    z_area_rel = scale(pupil_area_rel)
+  ) %>%
+  ungroup() %>%
+  mutate( # recompute frame_rel, as this might be slightly offset if the first frame in the second is NA
+    frame_rel = rel_second * 60
+  )
+
+# model
+pupil_model <- lmer(z_area_rel ~ (1 | trial) + rel_second + lultrial, data = pupil_annotations_binned)
+pupil_model_coef <- summary(pupil_model)[["coefficients"]]
+pupil_omnibus_test <-
+  linearHypothesis(pupil_model, c("rel_second = 0", "lultrialnon-lullaby = 0"))
+```
+
+We only obtained pupil size annotations for the singing trials, so they could not always be normalized to the previous trial (as in the heart rate analyses). Instead, we normalized across all available data from each infant, after binning observations by second to reduce noise. We analyzed changes in pupil dilation over the course of a singing trial, collapsing across all trials; and tested for differences between lullabies and non-lullabies.
+
+Consistent with a relaxation account, and in contrast to an attention account, pupils were smaller during lullabies than during non-lullabies (Fig. 3). We fit a random-effects linear model to the *z*-scored observations, predicted from the time course of each trial, with a random effect of trial (*N* = `r formatC(pupil_annotations_binned %>% nrow(), format = "d", big.mark = ",")` binned relative pupil size observations from 30 infants, mean `r pupil_annotations_binned %>% group_by(participant) %>% count() %>% pull(n) %>% mean()` observations per infant; likelihood ratio $\chi^{2} = `r pupil_omnibus_test['Chisq'][2,] %>% round(3)`$, $p `r pupil_omnibus_test['Pr(>Chisq)'][2,] %>% format_p()`$). The model showed that pupil size was smaller during lullabies than non-lullabies, on average ($t(`r pupil_model_coef['lultrialnon-lullaby', 'df']%>% round()`) = `r pupil_model_coef['lultrialnon-lullaby', 't value']%>% round(3)`$, $p `r pupil_model_coef['lultrialnon-lullaby', 'Pr(>|t|)']%>% format_p()`$, $\beta = `r pupil_model_coef['lultrialnon-lullaby', 'Estimate']%>% round(3)`$). We found no time-by-trial-type interaction; this is likely because pupil size appeared to regress to the mean by the end of each trial (see Fig. 3).
+
+```{r fig3, fig.height = 3.4, fig.width = 4.2, fig.cap = "\\textbf{Fig. 3 | Pupil dilation is reduced during lullabies.} Collapsing across all singing trials, pupil size was lower during lullabies than non-lullabies, in the subset of the participants studied ($N = 30$). The blue and red lines and confidence bands are from a LOESS regression that does not account for nesting."}
+
+# fig 3: time-wise pupillometry
+ggplot(
+  data = pupil_annotations_binned,
+  aes(
+    x = rel_second,
+    y = z_area_rel,
+    color = factor(lultrial)
+  )
+) +
+  geom_smooth(
+    method = "loess",
+    span = 1.5
+  ) +
+  scale_color_manual(values = c("non-lullaby" = "red", "lullaby" = "blue")) +
+  scale_x_continuous(breaks = seq(0, 14, by = 1)) +
+  scale_y_continuous(
+    breaks = seq(-0.2, 0.2, by = 0.05),
+    expand = expand_scale(mult = 0.05)
+  ) +
+  annotate(
+    geom = "text",
+    x = 10.5,
+    y = -0.075,
+    label = 'bold("Lullaby")',
+    color = "blue",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  annotate(
+    geom = "text",
+    x = 10,
+    y = 0.11,
+    label = 'bold("Non-lullaby")',
+    color = "red",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab("Pupil size relative to eye size (z)") +
+  xlab("Time during trial (s)")
+```
+
+### Relaxation response as indexed by electrodermal activity
+
+```{r eda}
+
+# load in data
+eda <- read.csv("./data/IPL_eda_clean.csv")
+
+# cleaning
+eda_clean <- eda %>% filter(abs(zeda) < 5)
+eda_time <- eda_clean %>%
+  group_by(id, time_allbin) %>%
+  summarise(zeda = mean(zeda))
+
+# model eda during whole experiment
+eda_model <- lmer(zeda ~ time_allbin + (1 | id), eda_time)
+eda_model_coef <- summary(eda_model)[["coefficients"]]
+
+# get starting edas for each id/trial pair
+eda_deda <- eda_clean %>%
+  select(id, trial, lultrial, time_allbin, time_trial, zeda) %>%
+  filter(!is.na(lultrial)) %>%
+  group_by(id, trial) %>%
+  mutate(startbin = min(time_allbin))
+
+# merge in starting edas and compute zeda change scores (deda)
+starteda <- eda_deda %>%
+  filter(time_allbin == startbin) %>%
+  group_by(id, trial) %>%
+  summarise(starteda = as.numeric(mean(zeda, na.rm = TRUE)))
+eda_deda <- left_join(eda_deda, starteda, by = c("id", "trial")) %>%
+  mutate(deda = zeda - starteda)
+
+# change in centered zeda within trial, with interaction
+eda_model_song <- lmer(deda ~ time_trial * lultrial + (1 | trial) + (1 | id), eda_deda)
+eda_model_song_coef <- summary(eda_model_song)[["coefficients"]]
+eda_model_song_CI <- confint(eda_model_song) # This takes quite a while
+
+eda_song_omnibus_test <- linearHypothesis(eda_model_song, c("time_trial = 0", "lultrial = 0", "time_trial:lultrial = 0"))
+
+# end-of-trial predictions
+eda_song_14s_diff_test <- linearHypothesis(eda_model_song, c("lultrial + 14 * time_trial:lultrial= 0"))
+eda_song_14s_diff_beta <- eda_model_song_coef["lultrial", "Estimate"] + 14 * eda_model_song_coef["time_trial:lultrial", "Estimate"]
+eda_song_14s_diff_beta_CI.lower <- eda_model_song_CI["lultrial", "2.5 %"] + 14 * eda_model_song_CI["time_trial:lultrial", "2.5 %"]
+eda_song_14s_diff_beta_CI.upper <- eda_model_song_CI["lultrial", "97.5 %"] + 14 * eda_model_song_CI["time_trial:lultrial", "97.5 %"]
+```
+
+We used the same normalization approach as the pupillometry analysis, because normalizing to the previous trial, as in the heart rate analyses, produced a distribution with unacceptably long tails (*z*s > 100). This is likely because the short trial length (14 s) affords only minimal variability in electrodermal activity, which generally changes much more slowly than does heart rate, inflating *z*-scored values. Normalization to the full experiment period produced a more acceptably narrow range of *z*-scores, such that applying the same trimming criterion as we used for heart rate (|*z*| > 5) resulted in the removal of only 4 observations of nearly 100,000.
+
+First, we noted an overall positive trend in electrodermal activity throughout the study, irrespective of the songs the infant was listening to. We fit a random-effects linear model to all *z*-scored observations (*N* = `r formatC(nobs(eda_model), format = "d", big.mark = ",")` from `r summary(eda_model)[['ngrps']]` infants, mean 180 observations per infant), which showed that electrodermal activity steadily increased throughout the experiment, on average ($t(`r eda_model_coef['time_allbin', 'df']%>% round()`) = `r eda_model_coef['time_allbin', 't value']%>% round(1)`$, $p `r eda_model_coef['time_allbin', 'Pr(>|t|)'] %>% format_p()`$, $\beta = `r eda_model_coef['time_allbin', 'Estimate']%>% round(3)`$). 
+
+Note that this result contrasts sharply with infants' responses during a distress induction procedure, as in previous research on the calming effects of singing [@Cirelli2020]. In that type of study, arousal and fussiness increase during a negative interaction (e.g., a still-face procedure), and subsequently decrease during a positive "recovery phase". It is unsurprising, however, given the structure of this experiment: infants often become bored and fussy during repetitive experiments, increasing arousal.
+
+As such, we measured the rate of increase in electrodermal activity, and analyzed changes in electrodermal activity as a function of lullaby or non-lullaby listening *relative to this increase*. This required centering the *z*-scores infant- and trial-wise. The key question is thus whether listening to a lullaby yields lower electrodermal activity than the predicted overall trial-wise increase, all else equal.
+
+The results supported the relaxation account (Fig. 4). We fit a random-effects linear model of electrodermal activity change scores over time, trial-wise, so as to test for a time by song type interaction. The model fit was acceptable (likelihood ratio $\chi^2 = `r eda_song_omnibus_test['Chisq'][2,] %>% round(1)`$, $p `r eda_song_omnibus_test['Pr(>Chisq)'][2,] %>% format_p()`$), the interaction term was significant ($t(`r eda_model_song_coef['time_trial:lultrial', 'df']%>% round()`) = `r eda_model_song_coef['time_trial:lultrial', 't value']%>% round(1)`$, $p `r eda_model_song_coef['time_trial:lultrial', 'Pr(>|t|)'] %>% format_p()`$, $\beta = `r eda_model_song_coef['time_trial:lultrial', 'Estimate']%>% round(3)`$), and a general linear hypothesis test showed an expected difference in electrodermal activity between lullabies and non-lullabies at the end of the trial (time = 14 s; $\beta = `r eda_song_14s_diff_beta %>% round(3)`$, 95% CI [`r eda_song_14s_diff_beta_CI.lower %>% round(3)`, `r eda_song_14s_diff_beta_CI.upper %>% round(3)`], $\chi^2 = `r eda_song_14s_diff_test[[2, 'Chisq']] %>% round(1)`$, $p `r eda_song_14s_diff_test[[2, 'Pr(>Chisq)']] %>% format_p()`$, $d = `r (eda_song_14s_diff_beta / sd(eda_deda[['deda']])) %>% round(2)`$). These results indicate that lullabies attenuated increases in electrodermal activity.
+
+```{r fig4, fig.height = 3.4, fig.width = 4.2, fig.cap = "\\textbf{Fig. 4 | Lullabies attenuate increases in arousal.} The black dotted line denotes the expected rise in electrodermal activity during a trial, from a linear model. This rise is attenuated during lullaby trials but not during non-lullaby trials, such that the expected level of electrodermal activity by the end of a lullaby trial is reduced. The blue and red lines and confidence bands are from a generalized additive model that does not account for nesting."}
+
+# fig 4: time-wise electrodermal activity
+ylab <- expression(paste("Electrodermal activity (centered ", italic("z"), ")"))
+ggplot(data = eda_deda) +
+  geom_smooth(
+    aes(
+      x = time_trial,
+      y = deda
+    ),
+    color = "black",
+    size = 0.5,
+    linetype = "dashed",
+    method = "lm",
+    se = FALSE
+  ) +
+  geom_smooth(aes(
+    x = time_trial,
+    y = deda,
+    color = factor(lultrial)
+  ),
+  method = "gam"
+  ) +
+  scale_color_manual(values = c("red", "blue")) +
+  scale_x_continuous(breaks = seq(0, 14, by = 1)) +
+  scale_y_continuous(breaks = seq(-0.02, 0.1, by = 0.02)) +
+  annotate(
+    geom = "text",
+    x = 11,
+    y = -0.01,
+    label = 'bold("Lullaby")',
+    color = "blue",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  annotate(
+    geom = "text",
+    x = 10,
+    y = 0.07,
+    label = 'bold("Non-lullaby")',
+    color = "red",
+    parse = TRUE,
+    vjust = "inward",
+    hjust = "inward",
+    size = 3.5
+  ) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab(ylab) +
+  xlab("Time during trial (s)")
+```
+
+### Visual attention to singers
+
+```{r gaze}
+
+# get data
+gaze <- read.csv("./data/IPL_gaze_clean.csv")
+
+# attention check: how long did babies look at the singer during the singing trials?
+gaze_attention <- gaze %>%
+  filter(lultrial == 0 | lultrial == 1) %>% # during singing trials
+  filter(
+    lullaby_side == "left" & lultrial == 1 & lookdir == "l" |
+      lullaby_side == "left" &
+        lultrial == 0 & lookdir == "r" |
+      lullaby_side == "right" &
+        lultrial == 1 & lookdir == "r" |
+      lullaby_side == "right" &
+        lultrial == 0 & lookdir == "l"
+  ) %>%
+  group_by(id) %>%
+  summarise(looktime = mean(look))
+
+# gaze during singing trials (lullaby singers vs non-lullaby singers)
+gaze_lul <- gaze %>%
+  filter(lultrial == 1) %>%
+  filter(lullaby_side == "left" &
+    lookdir == "l" | lullaby_side == "right" & lookdir == "r") %>%
+  group_by(id) %>%
+  summarise(lt_lul = mean(look, na.rm = TRUE) / 1000) # converting to seconds
+gaze_nlul <- gaze %>%
+  filter(lultrial == 0) %>%
+  filter(lullaby_side == "left" &
+    lookdir == "r" | lullaby_side == "right" & lookdir == "l") %>%
+  group_by(id) %>%
+  summarise(lt_nlul = mean(look, na.rm = TRUE) / 1000)
+gaze_singers <- inner_join(gaze_lul, gaze_nlul)
+
+# describe & test
+gaze_singing_lul <- t.test(gaze_singers$lt_lul) %>%
+  tidy() %>%
+  mutate(sd = sd(gaze_singers$lt_lul))
+gaze_singing_nlul <- t.test(gaze_singers$lt_nlul) %>%
+  tidy() %>%
+  mutate(sd = sd(gaze_singers$lt_nlul))
+t_gaze_singing <-
+  t.test(gaze_singers$lt_lul, gaze_singers$lt_nlul, paired = TRUE) %>%
+  tidy()
+
+# gaze during preference trials (lullaby singers vs non-lullaby singers)
+gaze_lul_pref <- gaze %>%
+  filter(is.na(lultrial)) %>%
+  filter(trial > 1) %>% # first trial is silent, but not a preference trial
+  filter(lullaby_side == "left" &
+    lookdir == "l" | lullaby_side == "right" & lookdir == "r") %>%
+  group_by(id) %>%
+  summarise(lt_lul = mean(look, na.rm = TRUE) / 1000)
+gaze_nlul_pref <- gaze %>%
+  filter(is.na(lultrial)) %>%
+  filter(trial > 1) %>%
+  filter(lullaby_side == "left" &
+    lookdir == "r" | lullaby_side == "right" & lookdir == "l") %>%
+  group_by(id) %>%
+  summarise(lt_nlul = mean(look, na.rm = TRUE) / 1000)
+gaze_pref <- inner_join(gaze_lul_pref, gaze_nlul_pref)
+
+# describe & test
+gaze_pref_lul <- t.test(gaze_pref$lt_lul) %>%
+  tidy() %>%
+  mutate(sd = sd(gaze_pref$lt_lul))
+gaze_pref_nlul <- t.test(gaze_pref$lt_nlul) %>%
+  tidy() %>%
+  mutate(sd = sd(gaze_pref$lt_nlul))
+t_gaze_pref <-
+  t.test(gaze_pref$lt_lul, gaze_pref$lt_nlul, paired = TRUE) %>%
+  tidy()
+
+# equivalence tests
+eq_raw_difference_value <- 1
+eq_test_alpha <- .05
+gaze_singing_eq_test <- TOSTpaired.raw(
+  n = nrow(gaze_singers),
+  m1 = gaze_singing_lul$estimate,
+  m2 = gaze_singing_nlul$estimate,
+  sd1 = gaze_singing_lul$sd,
+  sd2 = gaze_singing_nlul$sd,
+  r12 = cor(gaze_singers$lt_lul, gaze_singers$lt_nlul),
+  low_eqbound = -eq_raw_difference_value,
+  high_eqbound = eq_raw_difference_value,
+  alpha = eq_test_alpha,
+  verbose = F,
+  plot = F
+)
+gaze_pref_eq_test <- TOSTpaired.raw(
+  n = nrow(gaze_pref),
+  m1 = gaze_pref_lul$estimate,
+  m2 = gaze_pref_nlul$estimate,
+  sd1 = gaze_pref_lul$sd,
+  sd2 = gaze_pref_nlul$sd,
+  r12 = cor(gaze_pref$lt_lul, gaze_pref$lt_nlul),
+  low_eqbound = -eq_raw_difference_value,
+  high_eqbound = eq_raw_difference_value,
+  alpha = eq_test_alpha,
+  verbose = F,
+  plot = F
+)
+```
+
+Last, we ran two sets of exploratory analyses concerning infants' visual attention to the animated characters. In previous research, infants demonstrated social preferences for a person who had previously sung a song familiar to the infant [@Mehr2016; @Mehr2017b]; as such, we explored whether such a preference could be elicited purely on the basis of a difference in the types of songs a singer produced. 
+
+We found no evidence for such an effect. Infants looked for comparable durations to the two characters during singing trials (Supplementary Fig. 4; in seconds, lullabies: *M* = `r gaze_singing_lul$estimate %>% round(2)`, *SD* = `r gaze_singing_lul$sd %>% round(2)`, 95% CI [`r gaze_singing_lul$conf.low %>% round(2)`, `r gaze_singing_lul$conf.high %>% round(2)`]; non-lullabies: *M* = `r gaze_singing_nlul$estimate %>% round(2)`, *SD* = `r gaze_singing_nlul$sd %>% round(2)`, 95% CI [`r gaze_singing_nlul$conf.low %>% round(2)`, `r gaze_singing_nlul$conf.high %>% round(2)`]; *t*(`r t_gaze_singing$parameter`) = `r t_gaze_singing$statistic %>% round(2)`, *p* = `r t_gaze_singing$p.value %>% round(2)`). The two one-sided test procedure for equivalence testing [@Lakens2018] confirmed that these rates of attention were statistically equivalent ($\Delta = `r eq_raw_difference_value`$ s; $\Delta_{L}: t(`r gaze_singing_eq_test[['TOST_df']]`) = `r gaze_singing_eq_test[['TOST_t1']] %>% round(3)`, p `r gaze_singing_eq_test[['TOST_p1']] %>% format_p()`; \Delta_{U}: t(`r gaze_singing_eq_test[['TOST_df']]`) =`r gaze_singing_eq_test[['TOST_t2']] %>% round(3)`, p `r gaze_singing_eq_test[['TOST_p2']] %>% format_p()`$). 
+
+The same pattern was observed during the preference trials: attention to the two characters in silence, and after they had each sung a lullaby or non-lullaby, did not differ (Supplementary Fig. 4; attention in seconds to lullaby singer: *M* = `r gaze_pref_lul$estimate %>% round(2)`, *SD* = `r gaze_pref_lul$sd %>% round(2)`, 95% CI [`r gaze_pref_lul$conf.low %>% round(2)`, `r gaze_pref_lul$conf.high %>% round(2)`]; non-lullabies: *M* = `r gaze_pref_nlul$estimate %>% round(2)`, *SD* = `r gaze_pref_nlul$sd %>% round(2)`, 95% CI [`r gaze_pref_nlul$conf.low %>% round(2)`, `r gaze_pref_nlul$conf.high %>% round(2)`]; *t*(`r t_gaze_pref$parameter`) = `r t_gaze_pref$statistic %>% round(2)`, *p* = `r t_gaze_pref$p.value %>% round(2)`). These rates were statistically equivalent ($\Delta = `r eq_raw_difference_value`$ s; $\Delta_{L}: t(`r gaze_pref_eq_test[['TOST_df']]`) = `r gaze_pref_eq_test[['TOST_t1']] %>% round(3)`, p `r gaze_pref_eq_test[['TOST_p1']] %>% format_p()`; \Delta_{U}: t(`r gaze_pref_eq_test[['TOST_df']]`) =`r gaze_pref_eq_test[['TOST_t2']] %>% round(3)`, p `r gaze_pref_eq_test[['TOST_p2']] %>% format_p()`$). Note that these analyses include a few more infants than the heart rate analyses do; this is because some infants completed the study and were subsequently excluded from the heart rate analyses due to a poor physiology monitor signal, but had usable gaze data.
+
+```{r blinks}
+
+# get data
+blinks <- read.csv("./data/IPL_blink_clean.csv") %>%
+  filter(!is.na(lultrial)) %>%
+  group_by(id, lultrial) %>%
+  summarise(n_blink = median(blink))
+
+# summarize during lullabies vs non-lullabies
+blink_lul <- blinks %>%
+  filter(lultrial == 1) %>%
+  ungroup() %>%
+  summarise(
+    Q1 = quantile(n_blink, 0.25),
+    median = median(n_blink),
+    Q3 = quantile(n_blink, 0.75)
+  )
+blink_nlul <- blinks %>%
+  filter(lultrial == 0) %>%
+  ungroup() %>%
+  summarise(
+    Q1 = quantile(n_blink, 0.25),
+    median = median(n_blink),
+    Q3 = quantile(n_blink, 0.75)
+  )
+
+# test
+blink_test <-
+  wilcox.test(filter(blinks, lultrial == 0)$n_blink,
+    filter(blinks, lultrial == 1)$n_blink,
+    paired = TRUE
+  )
+blink_z <- qnorm(blink_test$p.value / 2)
+```
+
+As an additional exploratory measure, we counted the number of eye blinks during the singing trials, as blinks may index perceived stimulus salience [@Shultz2011a]. Infants blinked slightly less during lullabies (number of blinks per trial: median = `r blink_lul$median`, interquartile range: `r blink_lul$Q1`-`r blink_lul$Q3`) than non-lullabies (median = `r blink_nlul$median`, interquartile range: `r blink_nlul$Q1`-`r blink_nlul$Q3`), suggesting that they were more interested in the singers during lullabies than during non-lullabies (*z* = `r blink_z %>% round(2)`, *p* = `r blink_test$p.value %>% round(2)`, Wilcoxon signed-rank test). But blinking was rare, so this exploratory result should be interpreted with caution, as it may be an artifact of restricted range.
+
+### Relation between songs' infant-directedness and relaxation effects
+
+```{r infantDirectedness}
+
+# add song identifiers to hr data
+ids <- hr %>%
+  filter(!is.na(zhr_pt), !is.na(lultrial)) %>%
+  mutate(song = NA)
+
+# add song identifiers from Natural History of Song corpus
+# lullaby first, female singers
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 2, ]$song <- 21
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 6, ]$song <- 93
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 8, ]$song <- 9
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 12, ]$song <- 99
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 3, ]$song <- 26
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 5, ]$song <- 18
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 9, ]$song <- 97
+ids[ids$female_singer == 1 & ids$lullaby_order == "first" & ids$trial == 11, ]$song <- 78
+# lullaby second, female singers
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 3, ]$song <- 21
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 5, ]$song <- 93
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 9, ]$song <- 9
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 11, ]$song <- 99
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 2, ]$song <- 26
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 6, ]$song <- 18
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 8, ]$song <- 97
+ids[ids$female_singer == 1 & ids$lullaby_order == "second" & ids$trial == 12, ]$song <- 78
+# lullaby first, male singers
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 2, ]$song <- 101
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 6, ]$song <- 111
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 8, ]$song <- 95
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 12, ]$song <- 43
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 3, ]$song <- 104
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 5, ]$song <- 81
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 9, ]$song <- 94
+ids[ids$female_singer == 0 & ids$lullaby_order == "first" & ids$trial == 11, ]$song <- 23
+# lullaby second, male singer
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 3, ]$song <- 101
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 5, ]$song <- 111
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 9, ]$song <- 95
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 11, ]$song <- 43
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 2, ]$song <- 104
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 6, ]$song <- 81
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 8, ]$song <- 94
+ids[ids$female_singer == 0 & ids$lullaby_order == "second" & ids$trial == 12, ]$song <- 23
+
+# get naive listener ratings regarding perceived song functions
+# from Mehr & Singh et al. (2018, Curr Bio) Exp. 1 (data at https://osf.io/d7cn9)
+naiv <- read.csv("./data/NAIV_Exp1.csv") %>%
+  select(starts_with("baby"))
+
+# collapse to per-song means of perceived infant-directedness
+naiv_means <- colMeans(naiv, na.rm = TRUE) %>%
+  as.data.frame() %>%
+  mutate(song = 1:118) %>%
+  rename("idsness" = ".")
+
+# merge in hr data
+ids_dat <- left_join(ids, naiv_means, by = "song")
+
+# model
+ids_model <- lmer(zhr_pt ~ (1 | id) + (1 | trial) + idsness, ids_dat)
+ids_model_coefficients <- summary(ids_model)[["coefficients"]]
+```
+
+The lullabies we studied differ acoustically from non-lullabies in a number of ways: they tend to be less accented, slower in tempo, have smaller pitch ranges, and have more variable macrometers than the other songs [@Mehr2019]. These features are reflected in naïve listeners' ratings: the lullabies are perceived to have lower melodic and rhythmic complexity, slower tempo, less steady beat, lower arousal, lower valence, and lower pleasantness [@Mehr2018]. Together, these features predict the degree to which listeners perceive a song as infant-directed [@Moser2020; @Mehr2018].
+
+Infants' relaxation responses to lullabies should be explicable by their responses to these acoustic features. To test this prediction, we asked whether we could predict variability in infant physiological responses as a function of the degree of infant-directedness of each song, using the adult ratings from prior work [@Mehr2018]. Modeling trials and participants as random effects in a linear regression, we predicted infant heart rate from songs' perceived infant-directedness. We found a significant negative relationship, of modest size, such that the more infant-directed a song was, the larger the expected reduction in infant heart rate ($t(`r ids_model_coefficients['idsness', 'df']%>% round()`) = `r ids_model_coefficients['idsness', 't value']%>% round(1)`$, $p `r ids_model_coefficients['idsness', 'Pr(>|t|)'] %>% format_p()`$, $\beta = `r ids_model_coefficients['idsness', 'Estimate']%>% round(3)`$). This result confirms that the acoustical features of the songs drove the relaxation effects on infants.
+
+### Parent intuitions about foreign lullabies
+
+```{r parentIntuitions}
+
+# get data
+parent_intuit <- read.csv("./data/IPL_singerselector.csv")
+
+# summarize
+ss_descriptives <- parent_intuit %>%
+  summarise(
+    Q1 = quantile(chooselul, 0.25),
+    median = median(chooselul),
+    Q3 = quantile(chooselul, 0.75)
+  )
+
+# test
+ss_wilcox <- wilcox.test(parent_intuit$chooselul, mu = 2) %>% tidy()
+ss_z_stat <- qnorm(ss_wilcox$p.value / 2)
+
+```
+
+Parents viewed the same animated characters that their infant had seen, but the characters sang the 8 songs that were not presented during the experiment (so that the songs were unfamiliar to the parent). We asked them, for each pair of songs, to choose the character whose song they would prefer to sing to soothe their infant, if the infant were fussy and the parent knew how to sing the songs. Given previous findings that adults are sensitive to the soothing functions of foreign lullabies [@Mehr2018; @Mehr2019], we expected parents to choose the lullaby singers more often than the non-lullaby singers. 
+
+They did (Fig. 5). For the 4 pairs of songs, the median number of choices for the lullaby singer was 4 (all of them), a rate higher than the chance level of 2 choices (interquartile range: `r ss_descriptives$Q1`-`r ss_descriptives$Q3`; $z = `r ss_z_stat %>% round(2)`, p<0.001$, Wilcoxon signed-rank test).
+
+```{r fig5, fig.height = 3.4, fig.width = 4.2, fig.cap = "\\textbf{Fig. 5 | Parents prefer foreign lullabies to non-lullabies for soothing their own infants.} The bar chart displays the distribution of all parents' choices of whose song (lullaby-singer or non-lullaby-singer) they would prefer to sing to their own infant (if the infant were fussy and if they knew how to sing both songs). Parents made this choice four times, so the maximum number of lullaby-singer choices was 4. The dashed line indicates chance level of 2 choices. Parents almost always chose the lullaby-singer."}
+
+# fig 5: parent singer-selector choices
+ggplot(
+  data = parent_intuit,
+  aes(x = chooselul)
+) +
+  geom_vline(
+    xintercept = 2,
+    size = 0.5,
+    linetype = "dashed"
+  ) +
+  geom_histogram(
+    alpha = .8,
+    colour = "black",
+    fill = "blue",
+    binwidth = 1
+  ) +
+  theme_bw() +
+  expand_limits(
+    x = c(0, 4),
+    y = c(0, 85)
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 80, by = 10),
+    expand = c(0, 0)
+  ) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  labs(
+    y = "Number of parents",
+    x = "Number of lullaby-singer choices"
+  )
+```
+
+# Discussion
+
+We found that infants relax in response to unfamiliar foreign lullabies. Relative to non-lullabies, infants' heart rates slowed while listening to lullabies; this effect did not merely reflect attention-related heart rate deceleration, as it was accompanied by decreased pupil dilation and attenuated electrodermal activity. Moreover, the size of the heart rate effect remained steady across all ages of infants, suggesting that it was not altered by infants' rapidly growing experience with music. And the effect was predictable as a function of the degree of infant-directedness of the songs, suggesting that a core set of acoustic features associated with infant-directedness across cultures produced the psychophysiological effects in the infants.
+
+Infants were also highly attentive to the simple animated characters who produced the songs: they reliably attended to the characters for the majority of each singing trial, rarely blinking, and blinking modestly less during lullabies than non-lullabies. Moreover, parents uniformly chose lullabies over non-lullabies as the songs that they themselves would prefer to use to calm a fussy infant. 
+
+Infants and parents demonstrated all these behaviors without having previously learned anything about the music in question: they were given no cues as to the original behavioural contexts of the songs, as all the music was produced by solo voices without accompanying instruments; and they were unfamiliar with the songs they heard, unfamiliar with the languages they were sung in, and unfamiliar with the musical styles of the societies that originally produced the songs.
+
+These findings support a hypothesized role for infant-directed song in the ecosystem of parental investment [@Mehr2020; @Mehr2017] — including the proclivity of parents to sing to their infants [@Custodero2003; @Custodero2003a; @Mehr2014]; the acoustic features that characterize infant-directed songs worldwide [@Mehr2018; @Mehr2019; @Trehub1993a; @Trainor1997; @Trehub1997; @Moser2020; @Gomez2007; @Rock1999]; infants' ability to perceive them and motivation to engage with them [@Trehub2001a; @Hannon2007]; and their calming effects [@Cirelli2020; @Cirelli2019; @Corbeil2016; @Garunkstiene2014] — that is both universal and innately specified. 
+
+Note, however, that we only studied infants and parents from a single Western, Educated, Industrialized, Rich, and Democratic (WEIRD) society [@Henrich2010], who in this experiment heard music from many other societies. We expect that the findings will repeat with infants and parents in *any* society and are eager to find out whether they do.
+
+The findings reported here may also be compatible with an alternative account. Over the course of early infancy, infants likely learn associations between soothing, sleep-inducing contexts and lullabies produced by their caregivers. Perhaps the infants we studied listened to the unfamiliar, foreign lullabies; found that they sounded somewhat similar to the lullabies that their caregivers produce; and subsequently relaxed. Such an account would not explain cross-cultural consistency in lullaby features, but these could have arisen via mechanisms other than innate specifications of infant responses (e.g., convergent cultural evolution [@Sperber2004]). The consistency of the relaxation effects across a full year of infancy (see Supplementary Fig. 3), a time when infant music perception is actively shaped by musical experience [@Hannon2005], weighs against an experience-dependent interpretation, but we cannot rule it out.
+
+Whether the relaxation effects reflect infants' predispositions, early learning, or both, two aspects of infants' responses to music are surprising. First, whereas prior work has demonstrated effects of music on infant arousal [@Cirelli2020; @Garunkstiene2014], they were likely bolstered by mere-familiarity effects [@Zajonc2001], as infants have robust preferences for familiar, positive experiences. Here, because infants were unfamiliar with all aspects of the lullabies (including the languages in which they were sung and the societies in which they were recorded) the results imply a specific soothing effect of music, over and above any potential effects of familiarity. Second, despite the fact that lullabies are characterized by a universal set of acoustical features, there is nevertheless a great deal of variability in the lullabies infants heard (see stimuli at https://osf.io/2t6cy). This implies that infants' responses are robust to a degree of musical variability, providing further support for the idea that infant-directed song induces relaxation in infants.
+
+## Open questions
+
+We leave open at least three series of questions about how and why infant-directed music works the way it does. 
+
+First, what is it about lullabies that makes them relaxing for infants? The acoustic features of lullabies differ from those of other songs in systematic ways, universally [@Mehr2019]: which of these features drive the relaxing effect of lullabies, and how? Do those features reflect evolved predispositions that are specific to music [@Mehr2020; @Mehr2017]? Or might they reflect general form-function principles of animal vocal signals, such as those that lead alarm signals to be consistently loud and harsh across species [@Blumstein2012; @Morton1977; @Owren2001]? Future studies could test these questions by comparing infants' physiological responses across different song types and across different acoustic signals; or by systematically manipulating the acoustic features present in songs to measure their relaxation effects on listeners. Prior research has outlined some musical features that parents in Western cultures exaggerate while singing lullabies [@Trainor1996; @Trainor1997], which correspond with acoustic differences between infant- and adult-directed song across many societies [@Moser2020]; these are good candidates for possible features that may drive relaxation effects. 
+
+Experiments in adults might also inform whether soothing effects of particular acoustic features in music could underlie later responses to music in adulthood. While adults no longer seek out parental investment, perhaps the musical features that soothe fussy infants (e.g., slower tempos, fewer rhythmic accents) correspond with musical features that shape adults' emotional responses to music [@Sievers2013; @Cowen2020], which could influence physiological responses to music listening.
+
+Second, while infants in our studies listened to songs produced by simple animated characters in isolation, their real-world musical experiences are far richer, obviously. Parents sing to their infants in a multitude of environments (before a nap, in the car, during a bath) and as part of complex multimodal experiences including other actions (rocking, bouncing) and other content (stories, instructions). The relaxing properties of lullabies demonstrated here likely interact with all of these other features. Experiments that manipulate them — for example, by comparing the relaxation effects of music listening in isolation to those of music listening while being rocked — would more fully lay out the feature space of the infant's musical experience, specifying what it is about lullabies that infants find satisfying in natural contexts of parental investment. Moreover, lullabies are but one of many forms of infant-directed songs; songs directed toward infants in the context of play [@Trehub1998], which also appear universally [@Mehr2019], likely have their own unique, contrasting features, and corresponding effects on infants.
+
+Third, at present we know very little about what inferences infants make about the songs they hear or the people who sing them. In previous work, infants preferred the singer of a song that infants had previously learned in the context of live social interactions [@Mehr2016; @Mehr2017b]. Here, although infants relaxed more when listening to lullabies, they showed no preference for the lullaby singer over the other singer during the silent preference trials or during singing. This suggests that infants' physiological responses to music may be dissociated from their musical and/or social preferences. One possibility is that the lullabies are more relaxing than the other songs for infants, but that they do not necessarily prefer hearing the lullabies. Another is that infants do prefer listening to the lullabies over the other songs, but that this does not translate to a social preference for their singers. Infants' social preferences for singers may rely instead on the context in which they learned the songs they know, such that infants consider singers of songs which they previously learned in a social interaction to be particularly good social partners or sources of parental investment [@Mehr2016; @Mehr2017b]. 
+
+Taking this possibility a step further, might infants expect caregiving characters to produce infant-directed music for other distressed babies, just as they expect different adults who soothe the same baby to affiliate with one another [@Spokes2017]? Such results are plausible, given the known links between musical experience and infant social cognition [@Mehr2016; @Mehr2017b; @Soley2015; @Tsang2017], but have not yet been tested.
+
+## Conclusions
+
+Whatever the results of these lines of research, the present findings immediately suggest that singing is an effective means by which caregivers can relax infants, and raise the possibility of cumulative positive effects of music infant and parent well-being. Live and recorded music have shown promise in improving a variety of clinical outcomes [@Hole2015; @Richard-Lalonde2019], including in parents and infants [@Bieleninik2016; @Bo2000; @Keith2009; @Filippa2013; @Fancourt2018]. Music may also play an everyday role in improving health in infants — a role it has taken on across cultures and across human history [@Mehr2019].
+
+### Acknowledgements
+
+We thank the infants and parents who participated in this research; J. Kominsky, N. Soja, W. Pepe, E. Spelke, and S. Carey for their support with participant recruitment; and H. Alton, A. Bergson, A. Bitran, G. Jessani, A. Keomurjian, and B. Milosh for research assistance. This research was supported by the NIH Director's Early Independence Award DP5OD024566, the Harvard University Department of Psychology, and the Harvard Data Science Initiative. The funders had no role in the conceptualization, design, data collection, analysis, decision to publish, or preparation of the manuscript.
+
+### Data, materials, and code availability
+
+A reproducible version of this manuscript, including all analysis and visualization code and data, is available at https://github.com/themusiclab/infant-relax. Stimuli are available at https://osf.io/2t6cy. Audio excerpts from the *Natural History of Song* Discography are available at https://osf.io/vcybz; the full corpus can be explored interactively at https://themusiclab.org/nhsplots. For assistance with data or materials, please contact M.B., C.M.B., and S.A.M.
+
+### Author contributions
+
+S.A.M., S.A., and C.M.B. designed the research, supported with ideas from A.M. J.Y., C.M.B, and S.A. led data collection, assisted by M.B., L.Y., K.L., and F.X., under the supervision of S.A.M. M.B., J.S., and S.A.M. analyzed the data. J.S. and S.A.M. designed the pupil annotation method. S.A.M. provided funding. M.B., J.Y., C.M.B., and S.A.M. wrote the manuscript and all authors approved it.
+
+```{r figS1, fig.cap="\\textbf{Supplementary Fig. 1 | Method for manual pupil annotation.} The image is a screenshot of the web app that workers used to manually annotate pupil size from eye images. \\textbf{a}, Annotators  adjusted the brightness and contrast to maximize pupil visibility, viewing the image in \\textbf{b}, which updated in real time; \\textbf{c}, they then rated the degree of visibility of the pupil by marking one of six options, and finally, \\textbf{d}, used the mouse to draw an elliptical outline around the pupil, superimposed on the eye image. The instructions reminded participants to adjust the location and boundaries of the ellipse before submitting their annotation. Eye images were enlarged to improve the precision of the annotation process."}
+
+# fig S1: pdf of pupil annotation process (no code required)
+knitr::include_graphics("./viz/IPL_figS1.pdf")
+
+```
+
+```{r figS2, fig.width = 5, fig.height = 4, fig.cap = "\\textbf{Supplementary Fig. 2 | Subjective ratings of pupil visibility are reliable.} Of 10,791 eye images, 956 were annotated twice by the same worker, so as to assess the within-worker reliability of the annotation process. The confusion matrix shows that the subjective visbility of the pupil in a given eye image ($x$-axis) was almost always re-classified in the same way ($y$-axis). The letters (A-F) correspond to the six rating options (A: \\textit{Pupil is clearly visible}, B: \\textit{Pupil is visible, but it's difficult to see}, C: \\textit{Pupil is NOT visible, but I could see enough of it to make a guess about its outline}, D: \\textit{Pupil is NOT visible but the eye is still open}, E: \\textit{Pupil is NOT visible because the eye is closed}, F: \\textit{Other}). When the categories did not match, they were close: for example, images originally classified as [A] \\textit{Pupil is clearly visible}  were always re-classified as the same category, or as [B] \\textit{Pupil is visible, but it's difficult to see}, but never a lower-level classification (e.g., [D] \\textit{Pupil is not visible but the eye is still open})."}
+
+# fig S2: confusion matrix (heatmap) for pupil classification reliability
+radioLevels <-
+  c(
+    "clearly",
+    "difficult",
+    "estimate",
+    "notenough",
+    "blink",
+    "other"
+  )
+newRadioLevels <- LETTERS[1:length(radioLevels)]
+mat <-
+  caret::confusionMatrix(
+    factor(pupils_reliability_wide$noticeRadios_1, levels = radioLevels) %>% plyr::mapvalues(from = radioLevels, to = newRadioLevels),
+    factor(pupils_reliability_wide$noticeRadios_2, levels = radioLevels) %>% plyr::mapvalues(from = radioLevels, to = newRadioLevels)
+  )
+
+# plot
+ggplot(
+  as.data.frame(mat$table) %>% mutate(percent = round(Freq / sum(Freq), digits = 2)),
+  aes(
+    x = Prediction,
+    y = Reference,
+    label = percent,
+    fill = percent
+  )
+) +
+  geom_tile() +
+  scale_fill_viridis_c(option = "cividis") +
+  geom_text(aes(color = Freq > 100)) +
+  scale_color_manual(
+    guide = FALSE,
+    values = c("white", "black")
+  ) +
+  labs(
+    x = "Pupil visibility (original annotation)",
+    y = "Pupil visibility (reliability annotation)",
+    fill = "Proportion of\nannotations"
+  ) +
+  scale_x_discrete(expand = c(0, 0)) +
+  scale_y_discrete(expand = c(0, 0)) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+  )
+```
+
+```{r figS3, fig.width = 5, fig.height = 4, fig.cap="\\textbf{Supplementary Fig. 3 | No relation between age and heart rate effect size.} The scatterplot shows the difference in each infant's heart rates during lullabies vs. non-lullabies (i.e., the main effect size for the confirmatory analysis). The line and confidence interval is from a simple linear regression, and its slope is not significantly different than 0 (denoted by the horizontal line).", fig.pos = 'H'}
+
+## fig S3: infant-wise mean HR effect size as function of age
+hr_age <-
+  inner_join(ages, hr_joined) %>% mutate(diff = mean_lul_hr - mean_nlul_hr)
+ylab <-
+  expression(paste("Main heart rate effect size (", italic(z), ")"))
+ggplot(
+  data = hr_age,
+  aes(
+    x = age,
+    y = diff
+  )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    alpha = .8,
+    size = 0.5
+  ) +
+  geom_point(
+    pch = 21,
+    color = "black",
+    fill = "gray",
+    alpha = 0.8
+  ) +
+  geom_smooth(
+    method = "lm",
+    color = "black"
+  ) +
+  scale_x_continuous(breaks = seq(2, 14, by = 2)) +
+  scale_y_continuous(breaks = seq(-2.5, 2, by = .5)) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  labs(
+    y = ylab,
+    x = "Age (months)"
+  )
+```
+
+
+```{r figS4, fig.height = 5, fig.width = 5, fig.cap = "\\textbf{Supplementary Fig. 4 | No difference in gaze duration toward lullaby or non-lullaby singers.} The points depict each infant's mean duration of gaze toward lullaby or non-lullaby singers during the singing trials (\\textbf{a}) and the preference trials (\\textbf{b}), with the gray lines indicating the pairs of points that represent the same infants; the violin plots (coloured areas) are kernel density estimations; the horizontal black lines indicate the means across all participants; and the shaded white boxes indicate the 95\\% confidence intervals of the means. The points are jittered to improve clarity. No differences were observed; equivalence tests confirmed that the distributions were statistically equivalent."}
+
+# get data
+figs4adat <- gaze_singers %>%
+  pivot_longer(c(lt_lul, lt_nlul), names_to = "lul", values_to = "look") %>%
+  mutate(lul = recode_factor(lul, "lt_lul" = "Lullaby", "lt_nlul" = "Non-lullaby"))
+
+figs4bdat <- gaze_pref %>%
+  pivot_longer(c(lt_lul, lt_nlul), names_to = "lul", values_to = "look") %>%
+  mutate(lul = recode_factor(lul, "lt_lul" = "Lullaby", "lt_nlul" = "Non-lullaby"))
+
+# fig S4a: gaze during singing trials
+titlea <- expression(bold("a"))
+fig4a <- ggplot(
+  data = figs4adat,
+  aes(
+    y = look,
+    x = factor(lul)
+  )
+) +
+  geom_violin(aes(fill = lul),
+    trim = TRUE,
+    alpha = .8
+  ) +
+  scale_fill_manual(values = c("blue", "red")) +
+  geom_line(aes(group = id),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    alpha = .1
+  ) +
+  geom_point(
+    aes(y = look),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    size = 0.8,
+    pch = 21,
+    fill = "white"
+  ) +
+  stat_summary(
+    geom = "crossbar",
+    fun.data = mean_cl_normal,
+    fun.args = list(conf.int = 0.95),
+    fill = "white",
+    width = 0.8,
+    alpha = 0.8,
+    size = 0.4
+  ) +
+  stat_summary(
+    fun = "mean",
+    width = 0.9,
+    size = 0.4,
+    geom = "crossbar"
+  ) +
+  scale_x_discrete(labels = c("Lullaby", "Non-lullaby")) +
+  scale_y_continuous(breaks = seq(0, 14, by = 1)) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab("Mean gaze duration: singing trials (s)") +
+  xlab("") +
+  ggtitle(titlea)
+
+# fig S4b: gaze during preference trials
+titleb <- expression(bold("b"))
+fig4b <- ggplot(
+  data = figs4bdat,
+  aes(
+    y = look,
+    x = factor(lul)
+  )
+) +
+  geom_violin(aes(fill = lul),
+    trim = TRUE,
+    alpha = .8
+  ) +
+  scale_fill_manual(values = c("blue", "red")) +
+  geom_line(aes(group = id),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    alpha = .1
+  ) +
+  geom_point(
+    aes(y = look),
+    position = position_jitter(
+      width = .025,
+      seed = 6012
+    ),
+    size = 0.8,
+    pch = 21,
+    fill = "white"
+  ) +
+  stat_summary(
+    geom = "crossbar",
+    fun.data = mean_cl_normal,
+    fun.args = list(conf.int = 0.95),
+    fill = "white",
+    width = 0.8,
+    alpha = 0.8,
+    size = 0.4
+  ) +
+  stat_summary(
+    fun = "mean",
+    width = 0.9,
+    size = 0.4,
+    geom = "crossbar"
+  ) +
+  scale_x_discrete(labels = c("Lullaby", "Non-lullaby")) +
+  scale_y_continuous(breaks = seq(0, 14, by = 1)) +
+  theme_bw() +
+  theme(
+    axis.text = element_text(colour = "black", size = 10),
+    axis.title.x = element_text(size = 10, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    legend.position = "n"
+  ) +
+  ylab("Mean gaze duration: preference trials (s)") +
+  xlab("") +
+  ggtitle(titleb)
+
+# plot
+fig4a + fig4b
+```
+
+\newpage
+# References
