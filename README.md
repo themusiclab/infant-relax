@@ -1,6 +1,6 @@
 # Infants relax in response to unfamiliar foreign lullabies
 
-This repository contains data and code for Bainbridge & Bertolo et al. (2020, *PsyArXiv*). You can read the preprint at https://psyarxiv.com/xcj52. The pre-registration and stimuli are available at https://osf.io/2t6cy.
+This repository contains data and code for Bainbridge & Bertolo et al. (2020, *Nature Human Behaviour*). You can read the paper at https://rdcu.be/b8IWP. The pre-registration and stimuli are available at https://osf.io/2t6cy.
 
 ## Anatomy of the repo
 `IPL.Rmd` contains the manuscript and all analyses, including those figures that are generated dynamically.
