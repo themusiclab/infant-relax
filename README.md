@@ -12,3 +12,7 @@ This repository contains data and code for Bainbridge & Bertolo et al. (2020, *N
 ## Assistance
 
 If you need help with any of the data, code, or materials associated with this project, please contact Connie Bainbridge (cbainbridge@g.harvard.edu), Mila Bertolo (mila_bertolo@g.harvard.edu), and Samuel Mehr (sam@wjh.harvard.edu).
+
+## DOI
+
+This GitHub repository is archived on Zenodo at [![DOI](https://zenodo.org/badge/272135025.svg)](https://zenodo.org/badge/latestdoi/272135025).
